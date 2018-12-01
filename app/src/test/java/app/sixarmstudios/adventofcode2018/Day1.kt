@@ -18,6 +18,7 @@ import java.io.InputStreamReader
  *
  * Starting at 10:42am 12/1/2018
  * Starting part 2 at 11:09am 12/1/2018
+ * Finished by 11:30am 12/1/2018
  */
 class Day1 {
     private fun solve_part1(input: String): Int {
@@ -36,7 +37,7 @@ class Day1 {
     }
 
     @Test
-    fun sample2() {
+    fun sample2_part1() {
         assertThat(solve_part1("+1, +1, -2"), `is`(0))
     }
 
