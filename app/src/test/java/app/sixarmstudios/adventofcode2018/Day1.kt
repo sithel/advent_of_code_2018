@@ -19,7 +19,7 @@ import java.io.InputStreamReader
  * Starting at 10:42am 12/1/2018
  */
 class Day1 {
-    private fun solve(input: String): Int {
+    private fun solve_part1(input: String): Int {
         return input.replace(",", "")
                 .replace("+", "")
                 .replace("\n"," ")
@@ -30,26 +30,27 @@ class Day1 {
     }
 
     @Test
-    fun sample1() {
-        assertThat(solve("+1, +1, +1"), `is`(3))
+    fun sample1_part1() {
+        assertThat(solve_part1("+1, +1, +1"), `is`(3))
     }
 
     @Test
     fun sample2() {
-        assertThat(solve("+1, +1, -2"), `is`(0))
+        assertThat(solve_part1("+1, +1, -2"), `is`(0))
     }
 
     @Test
-    fun sample3() {
-        assertThat(solve("-1, -2, -3"), `is`(-6))
+    fun sample3_part1() {
+        assertThat(solve_part1("-1, -2, -3"), `is`(-6))
     }
 
     @Test
-    fun input() {
+    fun input_part1() {
         val inputStream = this.javaClass.classLoader!!.getResourceAsStream("day1_input.txt")
         val inputStr = BufferedReader( InputStreamReader(inputStream)).readText()
         inputStream.close()
-        assertThat(solve(inputStr), `is`(-6))
+        assertThat(solve_part1(inputStr), `is`(420))
+        // 11:07am, first gold star
     }
 
 
