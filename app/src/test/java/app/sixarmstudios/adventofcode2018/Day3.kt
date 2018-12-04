@@ -19,7 +19,7 @@ import java.io.InputStreamReader
  *
  * Starting at 7:37am
  * Part 2 at 8:07am
- * Finished at 8:29am 
+ * Finished at 8:29am
  */
 class Day3 {
     private val claimRegex = Regex("#(\\d+) @ (\\d+),(\\d+): (\\d+)x(\\d+)")
@@ -124,6 +124,7 @@ class Day3 {
         val claims = listOf("#123 @ 3,2: 5x4")
         assertThat(solve_part2(claims), `is`(123))
     }
+
     @Test
     fun solution_part2() {
         val inputStream = this.javaClass.classLoader!!.getResourceAsStream("day3_input.txt")
