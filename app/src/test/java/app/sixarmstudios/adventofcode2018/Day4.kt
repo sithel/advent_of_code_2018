@@ -3,6 +3,8 @@ package app.sixarmstudios.adventofcode2018
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 /**
  * Day 4!!
@@ -38,7 +40,38 @@ class Day4 {
             "[1518-11-05 00:55] wakes up"
 
     fun solution_part1(input: List<String>): Int {
-        return 5
+        return sleepiest_guard_part1(input) * sleepiest_time_part1(input).first
+    }
+
+
+    fun solution_part2(input: List<String>): Int {
+        val answer =  sleepiest_time_part2(input)
+        return answer.second * answer.first
+    }
+
+
+    fun sleepiest_time_part2(input: List<String>): Triple<Int, Int, Int> {
+        return processData(input)
+                .filter { it.totalSleep > 0 }
+                .groupBy { it.id }
+                .map { entry ->
+                    val result = entry.value
+                            .fold(Array(59) { 0 }) { timesheet, e ->
+                                // punch the timesheet for every minute asleep, increment by 1
+                                for (i in e.lastMinute until e.lastMinute + e.totalSleep) {
+                                    timesheet[i] = timesheet[i] + 1
+                                }
+                                timesheet
+                            }
+                            .foldIndexed(Pair(-1, -1)) { i, highScore, e ->
+                                if (e < highScore.second)
+                                    highScore
+                                else
+                                    Pair(i, e)
+                            }
+                    Triple(entry.key, result.first, result.second)
+                }
+                .maxBy { it.third }!!
     }
 
     private fun sleepiest_guard_part1(input: List<String>): Int {
@@ -51,35 +84,42 @@ class Day4 {
                 ?.first!!
     }
 
-    fun sleepiest_time_part1(input: List<String>): Int {
+    fun sleepiest_time_part1(input: List<String>): Pair<Int, Int> {
         val guardId = sleepiest_guard_part1(input)
-        processData(input)
-                .filter { it.id == guardId }
-                .fold(Array(59){0}) {timesheet, entry ->
+        return processData(input)
+                .filter { it.id == guardId && it.totalSleep > 0 }
+                .fold(Array(59) { 0 }) { timesheet, entry ->
                     // punch the timesheet for every minute asleep, increment by 1
+                    for (i in entry.lastMinute..entry.lastMinute + entry.totalSleep - 1) {
+                        timesheet[i] = timesheet[i] + 1
+                    }
                     timesheet
                 }
+                .foldIndexed(Pair(-1, -1)) { i, highScore, entry ->
+                    if (entry < highScore.second)
+                        highScore
+                    else
+                        Pair(i, entry)
+                }
 
-        return 5
     }
 
     private fun processData(input: List<String>): List<GuardSleep> {
         return input.sorted()
                 .map { processLine(-1, it) }
-                .fold(mutableListOf<GuardSleep>()) { history, entry ->
+                .fold(mutableListOf()) { history, entry ->
                     if (history.isEmpty() || entry.shiftBegin) {
                         history.add(GuardSleep(entry.guard, false, entry.minute, 0))
                         return@fold history
                     }
                     val last = history.last()
                     if (entry.startSleep) {
-                        // make a new entry and push to history
                         last.isAsleep = true
                         last.lastMinute = entry.minute
                     } else {
                         last.isAsleep = false
                         last.totalSleep = entry.minute - last.lastMinute
-                        last.lastMinute = entry.minute
+                        history.add(GuardSleep(last.id, false, entry.minute, 0))
                     }
                     history
                 }
@@ -127,12 +167,51 @@ class Day4 {
     @Test
     fun example1_part1_time() {
         val input = sampleShifts.split("\n").filter { it.isNotBlank() }
-        assertThat(sleepiest_time_part1(input), `is`(24))
+        assertThat(sleepiest_time_part1(input), `is`(Pair(24, 2)))
     }
 
     @Test
     fun example1_part1_solution() {
         val input = sampleShifts.split("\n").filter { it.isNotBlank() }
         assertThat(solution_part1(input), `is`(240))
+    }
+
+
+    @Test
+    fun solution_part1() {
+        val inputStream = this.javaClass.classLoader!!.getResourceAsStream("day4_input.txt")
+        val inputStr = BufferedReader(InputStreamReader(inputStream)).readText()
+        inputStream.close()
+        val input = inputStr.split("\n")
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
+        assertThat(solution_part1(input), `is`(8421))
+        // uuuuugh 10:18! I finally got my star!
+    }
+
+
+    @Test
+    fun example1_part2_time() {
+        val input = sampleShifts.split("\n").filter { it.isNotBlank() }
+        assertThat(sleepiest_time_part2(input), `is`(Triple(99, 45, 3)))
+    }
+
+    @Test
+    fun example1_part2_solution() {
+        val input = sampleShifts.split("\n").filter { it.isNotBlank() }
+        assertThat(solution_part2(input), `is`(4455))
+    }
+
+    @Test
+    fun solution_part2() {
+        val inputStream = this.javaClass.classLoader!!.getResourceAsStream("day4_input.txt")
+        val inputStr = BufferedReader(InputStreamReader(inputStream)).readText()
+        inputStream.close()
+        val input = inputStr.split("\n")
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
+        assertThat(solution_part2(input), `is`(83359))
+        // incorrect guess @ 10:28 : 378  (I forgot to write the example1_part2_solution test case)
+        // correct guess @ 10:30
     }
 }
