@@ -9,7 +9,7 @@ import java.io.InputStreamReader
 /**
  * https://adventofcode.com/2018/day/1
  *
- * Here are other example situations:
+ * Here are other example1 situations:
  *
  * +1, +1, +1 results in  3
  * +1, +1, -2 results in  0
