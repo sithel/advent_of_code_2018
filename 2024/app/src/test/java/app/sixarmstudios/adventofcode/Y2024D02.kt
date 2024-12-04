@@ -99,34 +99,30 @@ class Y2024D02 : Shark() {
   }
 
 
-  private fun printList(v:List<Int>, skipper:Int) =
+  private fun printList(v: List<Int>, skipper: Int) =
     v.mapIndexed { i, x -> if (i == skipper) "[$x]" else "$x" }.joinToString(", ")
 
 
   private fun processReport_2a(input: List<Int>, skipIndex: Int?): Boolean {
     var isIncreasingOuter: Boolean? = null
-    val handleBad: (Int) -> Boolean = { i ->
-      if (skipIndex == null) {
-        if (processReport_2a(input, i)) {
-          println("skipping $i saved me\t\t\t\t ${printList(input, i)}")
-          true
-        } else if (i > 0) {
-          val r = processReport_2a(input, i - 1)
-          if (r) {
-            println("skipping back to $i saved me\t\t ${printList(input, i-1)}")
-            true
-          } else {
-            println("### error w/ $i\t\t\t\t ${printList(input, i - 1)}")
-            false
-          }
-        } else {
-          println("~~~ error w/ $i\t\t\t\t\t ${printList(input, i)}")
-          false
-        }
-      } else {
-        println("!!!!!!!!! $i\t\t\t\t\t ${printList(input, i)}")
-        false
+    val handleBad: (Int) -> Boolean = bad@{ i ->
+      if (skipIndex != null) {
+        return@bad false
       }
+      if (processReport_2a(input, i)) {
+        println("skipping $i saved me\t\t\t\t ${printList(input, i)}")
+        return@bad true
+      }
+      if (i > 0 && processReport_2a(input, i - 1)) {
+          println("skipping prev [${i - 1}] saved me\t\t ${printList(input, i - 1)}")
+          return@bad true
+      }
+      if (i > 1 && processReport_2a(input, i - 2)) {
+        println("skipping prevv [${i - 2}] saved me\t\t ${printList(input, i - 2)}")
+        return@bad true
+      }
+      println("... couldn't save $i\t\t\t\t\t ${printList(input, i)}")
+      false
     }
     input
       .foldIndexed(0) { i, acc, n ->
@@ -135,7 +131,7 @@ class Y2024D02 : Shark() {
         }
         val isIncreasing = isIncreasingOuter
         when {
-          i == 0 -> return@foldIndexed n
+          acc == 0 -> return@foldIndexed n
           acc == n -> return handleBad(i)
           abs(acc - n) > 3 -> return handleBad(i)
           isIncreasing == null -> isIncreasingOuter = n > acc
@@ -249,7 +245,7 @@ class Y2024D02 : Shark() {
 
   @Test
   fun mine_2() {
-    assertEquals(2, solve_2("y2024_d02_mine.txt"))
+    assertEquals(528, solve_2("y2024_d02_mine.txt"))
     // 515 is too low - I know I'm not checking removing previous val
     // 527 is too low
   }
