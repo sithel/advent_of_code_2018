@@ -36,7 +36,7 @@ class Y2024D06 : Shark() {
       ">" -> runLine(info.first, 1, 0, "v", info.second)
       "v" -> runLine(info.first, 0, 1, "<", info.second)
       "<" -> runLine(info.first, -1, 0, "^", info.second)
-      null -> return info
+      ".", null -> return info
       else -> throw IllegalStateException("where you pointing?? @ ${info.first} : $guard")
     }.let { newInfo ->
       println("      ~ now @ ${newInfo.first}")
@@ -90,24 +90,40 @@ class Y2024D06 : Shark() {
     var oppositeSide = map
       .getOrNull(start.first + lookAlso.first)
       ?.getOrNull(start.second + lookAlso.second)
-    println("     \uD83D\uDC40 $potentialTurn\t\t\t\t$xDelta, $yDelta")
+//    println("     \uD83D\uDC40 $potentialTurn\t\t\t\t$xDelta, $yDelta")
     when (potentialTurn) {
-      "|", "+", "-" -> {
-        when (oppositeSide) {
-          "|", "+", "-" -> {
-            println("~ no wall, just crossing path  $oppositeSide")
-          }
-
-          else -> {
-            println("I see a potential wall @ $start -> $potentialTurn")
-            loopCount += 1
-          }
-        }
-      }
-
-      else -> Unit
+      "|", "+", "-", "." -> Unit
+      else -> return
     }
+    var i = 1
+    var seen: String? = "zzzz"
+    while (seen != null) {
+      var beyond = Pair(lookAt.first * i, lookAt.second * i)
+      seen = map
+        .getOrNull(start.first + beyond.first)
+        ?.getOrNull(start.second + beyond.second)
+      val past = Pair(lookAt.first * (i+1), lookAt.second * (i+1))
+      val seenPast = map
+        .getOrNull(start.first + past.first)
+        ?.getOrNull(start.second + past.second)
+//      println("              \uD83D\uDC40 $seen ($seenPast)\t\t\t\t$i")
+      if (seen == "+" && seenPast == "#") {
+//        println("⭐ potential WALL @ $start -> $potentialTurn | $oppositeSide " +
+//          "(turn is $i steps away)")
 
+//        val wallAt = Pair(start.first + yDelta, start.second + xDelta)
+//        val endMap =  markMap(wallAt, "0", map)
+//        endMap.forEach { r -> print("           "); r.forEach { print(it) };print("\n") }
+        loopCount += 1
+        return
+      }
+//      if (seen == ".") {
+//        println("......falls wall @ $start -> $potentialTurn | $oppositeSide " +
+//          "(escape is $i steps away)")
+//        return
+//      }
+      i += 1
+    }
   }
 
   private fun calcMark(
@@ -189,5 +205,6 @@ class Y2024D06 : Shark() {
   @Test
   fun mine2() {
     assertEquals(0, solution2("y2024_d06_mine.txt"))
+    // 711 is too low
   }
 }
