@@ -15,9 +15,9 @@ class Y2024D09 : Shark() {
     return 0
   }
 
-  sealed class Block{
-    data class Valid(val id: Int): Block()
-    data object Invalid: Block()
+  sealed class Block {
+    data class Valid(val id: Int, val size: Int) : Block()
+    data object Invalid : Block()
   }
 
   private fun buildDiskMap(fileName: String): List<Block> {
@@ -28,7 +28,7 @@ class Y2024D09 : Shark() {
         val n = v.toInt()
         (0 until n).map {
           if (i % 2 == 0) {
-            Block.Valid(i / 2)
+            Block.Valid(i / 2, n)
           } else {
             Block.Invalid
           }
@@ -47,21 +47,53 @@ class Y2024D09 : Shark() {
       }
   }
 
-  private fun packDiskMap(input:List<Block>): List<Block> {
-    return input.let{ list ->
-        val l = list.toMutableList()
-        var firstDot = advnceToNextDotOrInfinity(0, list)
-        var lastNum = list.size - 1
-        while (firstDot < lastNum) {
-          if (l[lastNum] != Block.Invalid) {
-            l[firstDot] = l[lastNum]
-            l[lastNum] = Block.Invalid
-            firstDot = advnceToNextDotOrInfinity(firstDot, l)
-          }
-          lastNum -= 1
+  /**
+   * @return Pair(start index, count)
+   */
+  private fun advanceToNextDotOrInfinity2(start: Int, l: List<Block>): Pair<Int, Int> {
+    val first = l.subList(start, l.size).indexOf(Block.Invalid)
+    if (first == -1) {
+      return Pair(Int.MAX_VALUE, 0)
+    }
+    val end = l.subList(start + first+1, l.size).indexOfFirst { it !is Block.Invalid }
+    return Pair(start + first, end - first)
+  }
+
+  private fun packDiskMap(input: List<Block>): List<Block> {
+    return input.let { list ->
+      val l = list.toMutableList()
+      var firstDot = advnceToNextDotOrInfinity(0, list)
+      var lastNum = list.size - 1
+      while (firstDot < lastNum) {
+        if (l[lastNum] != Block.Invalid) {
+          l[firstDot] = l[lastNum]
+          l[lastNum] = Block.Invalid
+          firstDot = advnceToNextDotOrInfinity(firstDot, l)
         }
-        l
+        lastNum -= 1
       }
+      l
+    }
+  }
+
+
+  private fun packDiskMap2(input: List<Block>): List<Block> {
+    return input.let { list ->
+      val l = list.toMutableList()
+      var (firstDot, freeSpace) = advanceToNextDotOrInfinity2(0, list)
+      var lastNum = list.size - 1
+      while (firstDot < list.size) {
+        if (l[lastNum] != Block.Invalid) {
+          l[firstDot] = l[lastNum]
+          l[lastNum] = Block.Invalid
+          val (first, free) = advanceToNextDotOrInfinity2(firstDot, l)
+          firstDot = first
+          freeSpace = free
+        }
+        lastNum -= 1
+      }
+      l
+    }
   }
 
   private fun calcCheckSum(input: List<Block>): Long {
