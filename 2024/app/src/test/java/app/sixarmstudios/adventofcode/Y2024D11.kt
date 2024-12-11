@@ -6,11 +6,12 @@ import org.junit.Test
 class Y2024D11 : Shark() {
 
   fun solution1(input: String, blinkCount: Long): Int {
-    val stones = loadFirstFileLine(input).split(" ").filter { it.isNotBlank() }
+    val stones = loadFirstFileLine(input).split(" ").filter { it.isNotBlank() }.map { it.toLong() }
     return (0L until blinkCount)
       .fold(stones) { acc, i ->
         val x = blink(acc)
-        println("round $i >> ${x.joinToString(" ")}")
+        println("round $i >> ${x.count()}")
+        System.gc()
         x
       }
       .count()
@@ -18,30 +19,28 @@ class Y2024D11 : Shark() {
 
   fun solution2(fileName: String): Long = 0
 
-  fun squash0s(stone: String): String = stone.toLong().toString()
-
-  fun splitStone(stone: String): List<String> {
+  fun splitStone(stone: Long): List<Long> {
 //    println("Given [$stone] - 0 | ${stone.length/2} | ${stone.length}")
+    val s = stone.toString()
     return listOf(
-      squash0s(stone.substring(0, stone.length / 2)),
-      squash0s(stone.substring(stone.length / 2, stone.length))
+      s.substring(0, s.length / 2).toLong(),
+      s.substring(s.length / 2, s.length).toLong()
     )
   }
 
-  fun changeStone(stone: String): List<String> {
-    val x = stone.toLong()
+  fun changeStone(stone: Long): List<Long> {
     return when {
-      x == 0L -> listOf("1")
-      stone.length % 2 == 0 -> splitStone(stone)
-      else -> listOf((x * 2024).toString())
+      stone == 0L -> listOf(1)
+      stone.toString().length % 2 == 0 -> splitStone(stone)
+      else -> listOf(stone * 2024L)
     }
   }
 
-  fun blink(stones: String): List<String> {
-    return blink(stones.split(" ").filter { it.isNotBlank() })
+  fun blink(stones: String): List<Long> {
+    return blink(stones.split(" ").filter { it.isNotBlank() }.map{it.toLong()})
   }
 
-  fun blink(stones: List<String>): List<String> {
+  fun blink(stones: List<Long>): List<Long> {
     return stones
       .map { changeStone(it) }
       .flatten()
@@ -77,7 +76,8 @@ class Y2024D11 : Shark() {
 
   @Test
   fun mine2() {
-    assertEquals(-1, solution2("y2024_d11_mine.txt"))
+    val fileName = "y2024_d11_mine.txt"
+    assertEquals(1, solution1(fileName, 75))
   }
 }
 
