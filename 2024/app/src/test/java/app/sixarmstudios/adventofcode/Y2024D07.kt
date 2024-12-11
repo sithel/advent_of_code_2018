@@ -19,6 +19,7 @@ class Y2024D07 : Shark() {
   fun apply(operator: String, v1: Long, v2: Long): Long = when (operator) {
     "*" -> v1 * v2
     "+" -> v1 + v2
+    "||" -> "$v1$v2".toLong() // breaks part 1
     else -> throw IllegalStateException("wtf??? invalid op [$operator]")
   }
 
@@ -38,12 +39,16 @@ class Y2024D07 : Shark() {
       result == e.result
     } else {
 //      println(" ----> trying another round")
-      isValid(e, operators + listOf("+")) || isValid(e, operators + listOf("*"))
+      isValid(e, operators + listOf("+"))
+        || isValid(e, operators + listOf("*"))
+        || isValid(e, operators + listOf("||"))
     }
   }
 
   fun canBeValid(e: Equation): Boolean {
-    return isValid(e, listOf("+")) || isValid(e, listOf("*"))
+    return isValid(e, listOf("+"))
+      || isValid(e, listOf("*"))
+      || isValid(e, listOf("||"))
   }
 
   fun solution1(fileName: String): Long {
@@ -73,11 +78,11 @@ class Y2024D07 : Shark() {
 
   @Test
   fun example2() {
-    assertEquals(-1, solution2("y2024_d07_example.txt"))
+    assertEquals(11387, solution1("y2024_d07_example.txt"))
   }
 
   @Test
   fun mine2() {
-    assertEquals(-1, solution2("y2024_d07_mine.txt"))
+    assertEquals(-1, solution1("y2024_d07_mine.txt"))
   }
 }
