@@ -15,7 +15,13 @@ class Y2024D12 : Shark() {
       .sum()
   }
 
-  fun solution2(fileName: String): Int = 0
+  fun solution2(fileName: String): Long {
+    val farm = buildFarm(fileName)
+
+    return exploreFarm(farm).plot
+      .map { it.calcPrice2() }
+      .sum()
+  }
 
   data class P(val row: Int, val col: Int) {
     val right: P by lazy { P(row, col + 1) }
@@ -50,6 +56,31 @@ class Y2024D12 : Shark() {
       }.sum()
       val v = entries.size.toLong() * edges
       println(">>>> ${entries.size} x $edges [was ${oldEdges.size}] = $v")
+      return v
+    }
+
+    fun calcPrice2(): Long {
+      val edges = oldEdges.fold(mutableSetOf<P>()) { acc, n ->
+        if(!entries.contains(n))
+          acc.add(n)
+//        n.left.let { if(!entries.contains(it) && !oldEdges.contains(it)) { acc.add(it) }}
+//        n.right.let { if(!entries.contains(it) && !oldEdges.contains(it)) { acc.add(it) }}
+//        n.up.let { if(!entries.contains(it) && !oldEdges.contains(it)) { acc.add(it) }}
+//        n.down.let { if(!entries.contains(it) && !oldEdges.contains(it)) { acc.add(it) }}
+        acc
+      }
+      val left_right = edges.map { it.col }.toSet().let{
+        println("  > ${it.joinToString(", ")}")
+        it
+      }.size
+      val up_down = edges.map { it.row }.toSet().let{
+        println("  > ${it.joinToString(", ")}")
+        it
+      }.size
+      val s = left_right + up_down
+      val v = entries.size.toLong() * s
+      println(">>>> ${entries.size} x $s [l/r = $left_right, u/d = $up_down]" +
+        "[was ${oldEdges.size} / ${edges.size}] = $v\t\t\t[${edges.joinToString(", ")}]")
       return v
     }
 
@@ -164,13 +195,13 @@ class Y2024D12 : Shark() {
   @Test
   fun mine1() {
     val fileName = "y2024_d12_mine.txt"
-    assertEquals(-1, solution1(fileName))
+    assertEquals(1464678, solution1(fileName))
     // 1216 - too low
   }
 
   @Test
   fun example2() {
-    assertEquals(-1, solution1("y2024_d12_example.txt"))
+    assertEquals(1206, solution2("y2024_d12_example.txt"))
   }
 
   @Test
