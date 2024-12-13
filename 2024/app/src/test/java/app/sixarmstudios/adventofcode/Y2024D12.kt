@@ -7,7 +7,14 @@ import kotlin.math.exp
 
 class Y2024D12 : Shark() {
 
-  fun solution1(fileName: String): Int = 0
+  fun solution1(fileName: String): Long {
+    val farm = buildFarm(fileName)
+
+    return exploreFarm(farm).plot
+      .map { it.calcPrice() }
+      .sum()
+  }
+
   fun solution2(fileName: String): Int = 0
 
   data class P(val row: Int, val col: Int) {
@@ -15,6 +22,7 @@ class Y2024D12 : Shark() {
     val down: P by lazy { P(row + 1, col) }
     val left: P by lazy { P(row, col - 1) }
     val up: P by lazy { P(row - 1, col) }
+    override fun toString(): String = "P($row,$col)"
   }
 
   data class Plot(val entries: MutableSet<P>, val type: Char, val edges: MutableSet<P>) {
@@ -23,23 +31,47 @@ class Y2024D12 : Shark() {
       edges.first()
         .also { oldEdges.add(it) }
         .also { edges.remove(it) }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
       null
     }
 
+    fun calcPrice(): Long {
+      val edges = entries.map { n ->
+        var r = 0
+        if (n.left.let { !entries.contains(it) })
+          ++r
+        if (n.down.let { !entries.contains(it) })
+          ++r
+        if (n.right.let { !entries.contains(it) })
+          ++r
+        if (n.up.let { !entries.contains(it) })
+          ++r
+        r
+      }.sum()
+      val v = entries.size.toLong() * edges
+      println(">>>> ${entries.size} x $edges [was ${oldEdges.size}] = $v")
+      return v
+    }
+
     fun report() {
-      val realEdges = oldEdges.filter { entries.contains(it) }
-      println("Plot $type [area: ${entries.size}, perimeter: ${realEdges.size}]")
-      if (realEdges.size < 6) {
-        println("this is sus...")
-        return
-      }
-      val rowMax = realEdges.maxByOrNull { it.row }?.row ?: 0
-      val colMax = realEdges.maxByOrNull { it.col }?.col ?: 0
+      oldEdges
+      println("\t\t>> Plot $type [area: ${entries.size}, perimeter: ${oldEdges.size}]")
+      val rowMax = (oldEdges.maxByOrNull { it.row }?.row ?: 0) + 3
+      val colMax = (oldEdges.maxByOrNull { it.col }?.col ?: 0) + 3
       val blankMap = (0..rowMax).map { (0..colMax).map { ' ' }.toMutableList() }
-      entries.forEach { blankMap[it.row][it.col] = type }
+      oldEdges.forEach {
+        val v = if (entries.contains(it)) {
+          type
+        } else {
+          'x'
+        }
+        blankMap[it.row + 1][it.col + 1] = v
+      }
 //      realEdges.forEach { blankMap[it.row][it.col] = 'x' }
       println(blankMap.map { it.joinToString("") }.joinToString("\n"))
+      println("Entries: [${entries.joinToString(", ")}]")
+      println("Edges: [${oldEdges.joinToString(", ")}]")
+      calcPrice()
     }
   }
 
@@ -51,7 +83,7 @@ class Y2024D12 : Shark() {
   ) {
     fun get(p: P): Char = map[p.row][p.col]
     fun safeGet(p: P): Char? = map.getOrNull(p.row)?.getOrNull(p.col)
-    fun shouldExplore(p: P): P? = if (plotted.contains(p) || unknown.contains(p)) null else p
+    fun shouldExplore(p: P): P? = if (plotted.contains(p)) null else p
     fun nextUnkown(): P = try {
       unknown.first()
         .also { unknown.remove(it) }
@@ -81,6 +113,7 @@ class Y2024D12 : Shark() {
     when (exploreTo) {
       null -> {}
       plot.type -> {
+        farm.unknown.remove(start)
         plot.entries.add(start)
         farm.plotted.add(start)
         farm.shouldExplore(start.right)?.also { plot.edges.add(it) }
@@ -93,6 +126,7 @@ class Y2024D12 : Shark() {
         farm.unknown.add(start)
       }
     }
+//    println("Edges: ${plot.edges.joinToString(", ")}\t\t PLOTTED: ${farm.plotted.joinToString(", ")}")
     val nextEdge = plot.nextEdge() ?: return plot
     return expandPlot(nextEdge, farm, plot)
   }
@@ -104,6 +138,7 @@ class Y2024D12 : Shark() {
     )
     println("   > Starting plot @ $start [${farm.safeGet(start)}] ")
     farm.plot.add(newPlot)
+    farm.plotted.add(start)
     return expandPlot(newPlot.nextEdge()!!, farm, newPlot)
   }
 
@@ -111,8 +146,10 @@ class Y2024D12 : Shark() {
     buildPlot(P(0, 0), farm).also { it.report() }
     while (farm.unknown.isNotEmpty()) {
       val nextStart = farm.nextUnkown()
-      println("         > Exploring @ $nextStart [${farm.safeGet(nextStart)}] " +
-        "(${farm.unknown.size} remaining / ${farm.plotted.size} explored)")
+      println("         > Exploring farm @ $nextStart [${farm.safeGet(nextStart)}] " +
+        "(${farm.unknown.size} remaining / ${farm.plotted.size} explored)\n\t\t" +
+        "unknown: [${farm.unknown.joinToString(", ")}]" +
+        "\n\t\tplotted: ${farm.plotted.joinToString(", ")}")
       buildPlot(nextStart, farm).also { it.report() }
     }
     return farm
@@ -121,12 +158,6 @@ class Y2024D12 : Shark() {
   @Test
   fun example1() {
     val fileName = "y2024_d12_example.txt"
-    val farm = buildFarm(fileName)
-//    val plot = buildPlot(P(0, 0), farm).plot.first()
-//    println(" I see plot : $plot")
-    println(" I see farm : $farm")
-    println(" I see finished farm : ${exploreFarm(farm)}")
-
     assertEquals(1930, solution1(fileName))
   }
 
@@ -134,6 +165,7 @@ class Y2024D12 : Shark() {
   fun mine1() {
     val fileName = "y2024_d12_mine.txt"
     assertEquals(-1, solution1(fileName))
+    // 1216 - too low
   }
 
   @Test
