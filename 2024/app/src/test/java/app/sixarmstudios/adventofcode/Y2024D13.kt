@@ -11,7 +11,7 @@ class Y2024D13 : Shark() {
     /*
     Many thanks to CodePurpose @ https://www.youtube.com/watch?v=fdhljZOFR_M
      */
-    fun calcMoves():Pair<Long, Long>?{
+    fun calcMoves(limit:Boolean = true):Pair<Long, Long>?{
       /*
       Button A: X+94, Y+34
       Button B: X+22, Y+67
@@ -27,7 +27,7 @@ class Y2024D13 : Shark() {
         return null
       val x = dX/d
       val y = dY/d
-      if (x > 100 || y > 100 || x < 0 || y < 0)
+      if (limit && (x > 100 || y > 100 || x < 0 || y < 0))
         return null
       if ((a.x * x + b.x * y != prize.x) || (a.y * x + b.y * y != prize.y)) {
         println("WHAT THE FUCK!??")
@@ -55,7 +55,19 @@ class Y2024D13 : Shark() {
       .sum()
   }
 
-  fun solution2(fileName: String): Long = 0
+  fun solution2(fileName: String): Long {
+    val error = 10000000000000L
+    val arcade = Arcade(
+      machines = readFile(fileName).machines.map { it.copy(
+        prize = Prize(x = it.prize.x + error, y = it.prize.y +error)
+      ) }
+    )
+    return arcade.machines
+      .map { it.calcMoves(false) }
+      .filterNotNull()
+      .map { (a,b) -> a*3 + b }
+      .sum()
+  }
 
   fun readFile(fileName: String): Arcade {
     val matches = regex.findAll(loadFile(fileName))
