@@ -23,14 +23,20 @@ class Y2024D13 : Shark() {
       val dX = prize.x * b.y - b.x * prize.y
       val dY = a.x * prize.y - prize.x * a.y
       val d = a.x*b.y- a.y * b.x
-      println("I see dX [$dX] - dY [$dY] - d[$d]\t\t\t\t$this")
       if (d == 0L)
         return null
       val x = dX/d
       val y = dY/d
       if (x > 100 || y > 100 || x < 0 || y < 0)
         return null
-      println(" --- solution $x, $y")
+      if ((a.x * x + b.x * y != prize.x) || (a.y * x + b.y * y != prize.y)) {
+        println("WHAT THE FUCK!??")
+        println("I see dX [$dX] - dY [$dY] - d[$d]\t\t\t\t\t\t$this")
+        println(" --- solution $x, $y  -> ${x * 3 + y}")
+        println("        ==>  (${a.x} * $x + ${b.x} * y = ${a.x * x} + ${b.x * y} = ${a.x * x + b.x * y} = ${prize.x})")
+        println("        ==>  (${a.y} * $x + ${b.y} * y = ${a.y * x} + ${b.x * y} = ${a.y * x + b.y * y} = ${prize.y})")
+        return null
+      }
       return Pair(x,y)
     }
   }
