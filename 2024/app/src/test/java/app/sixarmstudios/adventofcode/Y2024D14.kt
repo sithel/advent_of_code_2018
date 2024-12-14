@@ -10,6 +10,25 @@ class Y2024D14 : Shark() {
       robots.forEach { it.move(this) }
     }
 
+    fun hasTrunk(): Boolean {
+      return robots.firstOrNull { it.x == w / 2 && it.y == h / 2 } != null &&
+        robots.firstOrNull { it.x == w / 2 && it.y == (h / 2 + 1) } != null &&
+        robots.firstOrNull { it.x == w / 2 && it.y == (h / 2 - 1) } != null
+    }
+
+    fun report(i: Long) {
+      val s = (0 until h).map { (0 until w).map { " " }.toMutableList() }
+      robots.forEach { r ->
+        val existing = s[r.y][r.x]
+        s[r.y][r.x] = if (existing == " ")
+          "1"
+        else
+          (existing.toInt() + 1).toString()
+      }
+      val p = s.map { it.joinToString("") }.joinToString("\n")
+      println("  @ $i    \n$p\n")
+    }
+
     fun roboCount(quad: Int): Long = robots.filter { it.calcQuad(this) == quad }.count().toLong()
 
     fun safetyFactor(): Long {
@@ -52,7 +71,16 @@ class Y2024D14 : Shark() {
     return map.safetyFactor()
   }
 
-  fun solution2(fileName: String): Long = 0
+  fun solution2(fileName: String, width: Int, height: Int): Long {
+    val map = readFile(fileName, width, height)
+
+    (0L until 100000L).forEach {
+      map.tick()
+      if (map.hasTrunk())
+        map.report(it)
+    }
+    return 1L
+  }
 
   fun readFile(fileName: String, width: Int, height: Int): Map {
     val matches = regex.findAll(loadFile(fileName))
@@ -90,11 +118,16 @@ class Y2024D14 : Shark() {
 
   @Test
   fun example2() {
-    assertEquals(-1, solution2("y2024_d14_example.txt"))
+    assertEquals(-1, solution2("y2024_d14_example.txt", 1, 1))
   }
 
   @Test
   fun mine2() {
-    assertEquals(-1, solution2("y2024_d14_mine.txt"))
+    assertEquals(-1, solution2("y2024_d14_mine.txt", 101, 103))
+    // 6284 (wrong?? but so right!)
+    // 6283 too low
+    // 6284 too low
+    // 6285 was correct (but I typoed it once and squandered a bit more time)
+    // 16687? 27090? 37493? 47896? (delta 10,403) 99911
   }
 }
